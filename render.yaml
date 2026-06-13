@@ -1,0 +1,27 @@
+# render.yaml for BROKA Landing Page
+# This deploys a static site with a custom domain and CDN
+
+services:
+  - type: web
+    name: broka-landing
+    runtime: static
+    buildCommand: |-
+      echo "Static site — no build required"
+    staticPublishPath: ./
+    routes:
+      - type: redirect
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=3600
+    domains:
+      - broka.app  # Replace with your custom domain
+      - www.broka.app
+    envVars:
+      - key: SITE_NAME
+        value: BROKA - The Future of Intelligent Commerce
+      - key: SITE_DESCRIPTION
+        value: BROKA puts an AI broker inside every negotiation — protecting both buyer and seller, speaking your language, and closing win-win deals you can actually trust.
+    healthCheckPath: /
