@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BROKA — The Future of Intelligent Commerce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  /* ─── Design Tokens (matched to BrokaColors) ─── */
+  :root {
+    --bg:           #03000A;
+    --bg-mid:       #07021A;
+    --bg-card:      #0D0828;
+    --grad-start:   #7C3AED;
+    --grad-mid:     #4F46E5;
+    --grad-end:     #1E1B4B;
+    --neon-purple:  #A78BFA;
+    --neon-blue:    #38BDF8;
+    --neon-green:   #34D399;
+    --neon-pink:    #F472B6;
+    --neon-cyan:    #22D3EE;
+    --gold:         #FBBF24;
+    --text-high:    #F8F7FF;
+    --text-mid:     #8B7EC8;
+    --text-low:     #3D3468;
+    --border:       #1E1648;
+    --border-glow:  #7C3AED;
+    --success:      #10B981;
+    --danger:       #EF4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text-high);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* ─── Utility ─── */
+  .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+  .gradient-text {
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue), var(--neon-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px;
+    border-radius: 100px;
+    border: 1px solid rgba(167,139,250,0.3);
+    background: rgba(124,58,237,0.12);
+    font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--neon-purple);
+  }
+  .pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--neon-green); box-shadow: 0 0 6px var(--neon-green);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(0.8)} }
+
+  /* ─── Nav ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 0 24px;
+    height: 68px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(3,0,10,0.7);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(30,22,72,0.6);
+    transition: all .3s;
+  }
+  nav.scrolled {
+    background: rgba(7,2,26,0.92);
+    border-bottom-color: rgba(124,58,237,0.2);
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+  }
+  .nav-logo-mark {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--grad-start), var(--grad-mid));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 900; color: #fff;
+    box-shadow: 0 0 16px rgba(124,58,237,0.5);
+    letter-spacing: -1px;
+  }
+  .nav-logo-name {
+    font-size: 20px; font-weight: 900; letter-spacing: 4px;
+    color: var(--text-high);
+  }
+  .nav-links {
+    display: flex; gap: 32px; list-style: none;
+  }
+  .nav-links a {
+    color: var(--text-mid); text-decoration: none;
+    font-size: 14px; font-weight: 500;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--text-high); }
+  .nav-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 22px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--grad-start), var(--grad-mid));
+    color: #fff; text-decoration: none;
+    font-size: 14px; font-weight: 700;
+    box-shadow: 0 0 20px rgba(124,58,237,0.35);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 0 32px rgba(124,58,237,0.55); }
+  .nav-cta svg { width: 14px; height: 14px; }
+
+  /* ─── Hero ─── */
+  .hero {
+    position: relative; min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 120px 24px 80px;
+    overflow: hidden;
+  }
+  /* Orbit canvas */
+  #orbit-canvas {
+    position: absolute; inset: 0;
+    pointer-events: none;
+  }
+  /* Radial bg glow */
+  .hero-glow {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -55%);
+    width: 900px; height: 900px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.18) 0%, rgba(79,70,229,0.08) 45%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    max-width: 680px;
+  }
+  .hero-eyebrow { margin-bottom: 24px; }
+  .hero-headline {
+    font-size: clamp(42px, 6vw, 72px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    margin-bottom: 24px;
+  }
+  .hero-sub {
+    font-size: 17px; color: var(--text-mid);
+    max-width: 520px; line-height: 1.7;
+    margin-bottom: 40px;
+  }
+  .hero-actions {
+    display: flex; align-items: center; gap: 16px;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 32px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--grad-start), var(--grad-mid));
+    color: #fff; text-decoration: none;
+    font-size: 15px; font-weight: 700;
+    box-shadow: 0 0 28px rgba(124,58,237,0.4);
+    transition: transform .2s, box-shadow .2s;
+    border: none; cursor: pointer;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(124,58,237,0.6); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 15px 28px;
+    border-radius: 16px;
+    border: 1px solid rgba(167,139,250,0.3);
+    background: rgba(124,58,237,0.08);
+    color: var(--neon-purple); text-decoration: none;
+    font-size: 15px; font-weight: 600;
+    transition: all .2s;
+  }
+  .btn-secondary:hover { background: rgba(124,58,237,0.15); border-color: var(--neon-purple); }
+
+  .hero-stats {
+    display: flex; gap: 40px; margin-top: 56px;
+    flex-wrap: wrap;
+  }
+  .stat-item { display: flex; flex-direction: column; gap: 4px; }
+  .stat-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px; font-weight: 700;
+    color: var(--text-high);
+  }
+  .stat-label { font-size: 12px; color: var(--text-mid); letter-spacing: 0.5px; }
+
+  /* floating phone mockup */
+  .hero-visual {
+    position: absolute; right: max(5vw, 40px); top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .phone-frame {
+    width: 240px; height: 480px;
+    border-radius: 36px;
+    border: 2px solid rgba(167,139,250,0.35);
+    background: linear-gradient(160deg, #130D35, #080520);
+    box-shadow:
+      0 0 60px rgba(124,58,237,0.25),
+      0 40px 80px rgba(0,0,0,0.5),
+      inset 0 0 30px rgba(124,58,237,0.06);
+    overflow: hidden;
+    position: relative;
+    animation: float 6s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-14px); }
+  }
+  .phone-notch {
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    width: 80px; height: 6px; border-radius: 3px;
+    background: rgba(30,22,72,0.8);
+  }
+  .phone-screen {
+    padding: 40px 16px 16px;
+    height: 100%;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .phone-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px;
+  }
+  .phone-greeting { font-size: 9px; color: var(--text-mid); }
+  .phone-loc { font-size: 8px; color: var(--neon-cyan); display: flex; align-items: center; gap: 3px; }
+  .phone-title { font-size: 14px; font-weight: 800; letter-spacing: 2px; }
+  .phone-tabs {
+    display: flex; gap: 6px; margin-bottom: 2px;
+  }
+  .phone-tab {
+    font-size: 7px; font-weight: 600; padding: 3px 8px; border-radius: 6px;
+    color: var(--text-mid);
+  }
+  .phone-tab.active {
+    background: rgba(124,58,237,0.25); color: var(--neon-purple);
+  }
+  .phone-card {
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1A1040, #0A0520);
+    border: 1px solid rgba(30,22,72,0.8);
+    padding: 10px;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .phone-card-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .phone-card-name { font-size: 9px; font-weight: 700; }
+  .phone-card-price { font-size: 9px; font-weight: 700; color: var(--neon-green); }
+  .phone-card-meta { font-size: 7px; color: var(--text-mid); }
+  .phone-card-badge {
+    font-size: 6px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+    background: rgba(251,191,36,0.15); color: var(--gold);
+  }
+  .phone-deal-bar {
+    height: 3px; border-radius: 2px;
+    background: var(--border);
+    position: relative; overflow: hidden;
+  }
+  .phone-deal-bar::after {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 68%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--grad-start), var(--neon-blue));
+  }
+  .phone-ai-msg {
+    border-radius: 10px;
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(167,139,250,0.2);
+    padding: 8px;
+    font-size: 7px; color: var(--text-mid); line-height: 1.5;
+  }
+  .phone-ai-msg span { color: var(--neon-purple); font-weight: 600; }
+  .phone-bottom {
+    margin-top: auto;
+    display: flex; justify-content: space-around;
+    padding-top: 8px; border-top: 1px solid var(--border);
+  }
+  .phone-nav-icon { font-size: 12px; opacity: 0.5; }
+  .phone-nav-icon.active { opacity: 1; filter: drop-shadow(0 0 4px var(--neon-purple)); }
+  .phone-glow-ring {
+    position: absolute; inset: -30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.15), transparent 65%);
+    pointer-events: none;
+    animation: ring-pulse 4s ease-in-out infinite;
+  }
+  @keyframes ring-pulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+
+  /* ─── Ticker ─── */
+  .ticker-wrap {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: rgba(7,2,26,0.6);
+    overflow: hidden;
+    padding: 12px 0;
+    position: relative; z-index: 3;
+  }
+  .ticker-track {
+    display: flex; gap: 0;
+    white-space: nowrap;
+    animation: scroll-left 28s linear infinite;
+  }
+  @keyframes scroll-left { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .ticker-item {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 0 28px;
+    font-size: 12px; font-weight: 600; color: var(--text-mid);
+    border-right: 1px solid var(--border);
+  }
+  .ticker-item .ti-cat { color: var(--neon-purple); }
+  .ticker-item .ti-price { color: var(--neon-green); font-weight: 700; }
+
+  /* ─── Section Shells ─── */
+  section { padding: 100px 24px; }
+  .section-eyebrow { margin-bottom: 14px; }
+  .section-heading {
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 900; letter-spacing: -1px;
+    margin-bottom: 16px;
+    line-height: 1.1;
+  }
+  .section-sub {
+    font-size: 16px; color: var(--text-mid);
+    max-width: 540px; line-height: 1.7;
+    margin-bottom: 60px;
+  }
+
+  /* ─── How It Works ─── */
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+  }
+  .how-card {
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, #130D35, #080520);
+    padding: 32px;
+    position: relative;
+    transition: border-color .3s, transform .3s;
+    overflow: hidden;
+  }
+  .how-card:hover { border-color: rgba(167,139,250,0.4); transform: translateY(-4px); }
+  .how-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .how-card:hover::before { opacity: 1; }
+  .how-step-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    color: var(--text-low); margin-bottom: 20px;
+  }
+  .how-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  .how-icon.purple { background: rgba(124,58,237,0.15); box-shadow: 0 0 20px rgba(124,58,237,0.15); }
+  .how-icon.blue   { background: rgba(56,189,248,0.12); box-shadow: 0 0 20px rgba(56,189,248,0.12); }
+  .how-icon.green  { background: rgba(52,211,153,0.12); box-shadow: 0 0 20px rgba(52,211,153,0.12); }
+  .how-icon.gold   { background: rgba(251,191,36,0.12); box-shadow: 0 0 20px rgba(251,191,36,0.12); }
+  .how-card h3 { font-size: 17px; font-weight: 800; margin-bottom: 10px; }
+  .how-card p  { font-size: 14px; color: var(--text-mid); line-height: 1.65; }
+
+  /* ─── Features Strip ─── */
+  .features-bg {
+    background: linear-gradient(180deg, var(--bg) 0%, #050112 50%, var(--bg) 100%);
+  }
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  @media(max-width:700px){ .features-grid { grid-template-columns: 1fr; } }
+  .feature-item {
+    display: flex; gap: 20px; align-items: flex-start;
+  }
+  .feature-icon-wrap {
+    flex-shrink: 0;
+    width: 48px; height: 48px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    background: rgba(124,58,237,0.1);
+    border: 1px solid rgba(167,139,250,0.15);
+  }
+  .feature-text h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .feature-text p  { font-size: 13px; color: var(--text-mid); line-height: 1.6; }
+
+  /* ─── Languages ─── */
+  .languages-section {
+    background: linear-gradient(135deg, rgba(124,58,237,0.06), rgba(56,189,248,0.04));
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .lang-grid {
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .lang-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    font-size: 14px; font-weight: 600;
+    transition: all .25s;
+    cursor: default;
+  }
+  .lang-chip:hover { border-color: var(--neon-purple); background: rgba(124,58,237,0.1); }
+  .lang-chip .flag { font-size: 18px; }
+
+  /* ─── Pricing ─── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .pricing-card {
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, #130D35, #080520);
+    padding: 36px 32px;
+    position: relative;
+    transition: transform .3s;
+  }
+  .pricing-card:hover { transform: translateY(-4px); }
+  .pricing-card.featured {
+    border-color: rgba(167,139,250,0.5);
+    box-shadow: 0 0 40px rgba(124,58,237,0.2);
+  }
+  .pricing-badge {
+    position: absolute; top: -12px; right: 28px;
+    padding: 4px 14px; border-radius: 100px;
+    background: linear-gradient(135deg, var(--grad-start), var(--grad-mid));
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    color: #fff;
+  }
+  .pricing-name { font-size: 13px; font-weight: 700; color: var(--text-mid); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .pricing-amount {
+    display: flex; align-items: flex-end; gap: 4px; margin-bottom: 4px;
+  }
+  .pricing-amount .currency { font-size: 16px; font-weight: 700; color: var(--text-mid); align-self: flex-start; padding-top: 8px; }
+  .pricing-amount .price    { font-family: 'Space Grotesk', sans-serif; font-size: 48px; font-weight: 700; color: var(--text-high); line-height: 1; }
+  .pricing-amount .period   { font-size: 14px; color: var(--text-mid); margin-bottom: 6px; }
+  .pricing-desc { font-size: 13px; color: var(--text-mid); margin-bottom: 28px; line-height: 1.5; }
+  .pricing-divider { height: 1px; background: var(--border); margin-bottom: 24px; }
+  .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .pricing-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-mid); }
+  .pricing-features li .check { color: var(--neon-green); font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .pricing-features li.dim .check { color: var(--text-low); }
+  .pricing-features li.dim { opacity: 0.45; }
+
+  /* ─── Testimonials ─── */
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .testimonial-card {
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, #130D35, #080520);
+    padding: 28px;
+    transition: border-color .3s;
+  }
+  .testimonial-card:hover { border-color: rgba(167,139,250,0.25); }
+  .testimonial-stars { color: var(--gold); font-size: 13px; margin-bottom: 14px; letter-spacing: 2px; }
+  .testimonial-quote { font-size: 14px; line-height: 1.7; color: var(--text-high); margin-bottom: 20px; }
+  .testimonial-author { display: flex; align-items: center; gap: 12px; }
+  .testimonial-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800;
+    background: linear-gradient(135deg, var(--grad-start), var(--grad-mid));
+    color: #fff;
+  }
+  .testimonial-name { font-size: 13px; font-weight: 700; }
+  .testimonial-loc  { font-size: 11px; color: var(--text-mid); }
+
+  /* ─── CTA Banner ─── */
+  .cta-section {
+    padding: 100px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-bg-glow {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 700px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(124,58,237,0.2), transparent 65%);
+    pointer-events: none;
+  }
+  .cta-headline { font-size: clamp(32px, 4vw, 54px); font-weight: 900; letter-spacing: -1px; margin-bottom: 16px; line-height: 1.1; }
+  .cta-sub { font-size: 17px; color: var(--text-mid); max-width: 480px; margin: 0 auto 40px; line-height: 1.7; }
+  .cta-actions { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+  .download-btn {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 16px 32px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--grad-start), var(--grad-mid));
+    color: #fff; text-decoration: none;
+    font-size: 15px; font-weight: 700;
+    box-shadow: 0 0 28px rgba(124,58,237,0.4);
+    transition: all .2s;
+  }
+  .download-btn:hover { transform: translateY(-2px); box-shadow: 0 0 48px rgba(124,58,237,0.6); }
+  .download-btn .db-icon { font-size: 22px; }
+  .download-btn .db-text { display: flex; flex-direction: column; text-align: left; }
+  .download-btn .db-sub  { font-size: 10px; font-weight: 500; opacity: .75; letter-spacing: .5px; }
+  .download-btn .db-name { font-size: 16px; font-weight: 800; letter-spacing: -.3px; }
+
+  /* ─── Footer ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .footer-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .footer-name { font-size: 16px; font-weight: 900; letter-spacing: 4px; color: var(--text-high); }
+  .footer-links { display: flex; gap: 24px; list-style: none; }
+  .footer-links a { font-size: 13px; color: var(--text-mid); text-decoration: none; transition: color .2s; }
+  .footer-links a:hover { color: var(--text-high); }
+  .footer-copy { font-size: 12px; color: var(--text-low); width: 100%; text-align: center; padding-top: 20px; border-top: 1px solid var(--border); margin-top: 8px; }
+
+  /* ─── Tech Badge Strip ─── */
+  .tech-strip {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px;
+    background: rgba(7,2,26,0.4);
+  }
+  .tech-strip-inner {
+    max-width: 1140px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .tech-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(13,8,40,0.6);
+    font-size: 12px; font-weight: 600; color: var(--text-mid);
+  }
+  .tech-badge .dot { width: 5px; height: 5px; border-radius: 50%; }
+
+  /* ─── Responsive ─── */
+  @media(max-width: 900px) {
+    .hero-visual { display: none; }
+    .hero-content { max-width: 100%; }
+    .nav-links { display: none; }
+  }
+  @media(max-width: 600px) {
+    .hero-stats { gap: 24px; }
+    .features-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; align-items: flex-start; }
+  }
+
+  /* ─── Scroll animations ─── */
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+  .reveal-delay-4 { transition-delay: .4s; }
+</style>
+</head>
+<body>
+
+<!-- ─── Navigation ─── -->
+<nav id="main-nav">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark">B</div>
+    <span class="nav-logo-name">BROKA</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#stores">Stores</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <a href="https://we.tl/t-5khUBKXnAtbxmZ7Z" class="nav-cta" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" stroke="none" fill="currentColor"/></svg>
+    Download App
+  </a>
+</nav>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <canvas id="orbit-canvas"></canvas>
+
+  <div class="container" style="width:100%">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="pill">AI-Powered Marketplace</span>
+      </div>
+      <h1 class="hero-headline">
+        The fairest way to<br/>
+        <span class="gradient-text">buy &amp; sell</span><br/>
+        in East Africa.
+      </h1>
+      <p class="hero-sub">
+        BROKA puts an AI broker inside every negotiation — protecting both buyer and seller, speaking your language, and closing win-win deals you can actually trust.
+      </p>
+      <div class="hero-actions">
+        <a href="https://we.tl/t-5khUBKXnAtbxmZ7Z" class="btn-primary" target="_blank" rel="noopener">
+          📲 Download BROKA — Free
+        </a>
+        <a href="#how" class="btn-secondary">
+          See how it works ↓
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num gradient-text">AI</span>
+          <span class="stat-label">Broker in every deal</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num gradient-text">3%</span>
+          <span class="stat-label">Transparent fee only</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num gradient-text">6</span>
+          <span class="stat-label">Local languages supported</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num gradient-text">M-Pesa</span>
+          <span class="stat-label">Secure payments</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phone mockup -->
+  <div class="hero-visual">
+    <div class="phone-glow-ring"></div>
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="phone-header">
+          <div>
+            <div class="phone-greeting">Good morning, Alex 👋</div>
+            <div class="phone-title">BROKA</div>
+          </div>
+          <div class="phone-loc">📍 Nairobi, KE</div>
+        </div>
+        <div class="phone-tabs">
+          <div class="phone-tab active">Goods</div>
+          <div class="phone-tab">Brokers</div>
+          <div class="phone-tab">Property</div>
+          <div class="phone-tab">Traders</div>
+        </div>
+
+        <div class="phone-card">
+          <div class="phone-card-row">
+            <div>
+              <div class="phone-card-name">🚗 Toyota Fielder 2016</div>
+              <div class="phone-card-meta">Westlands · 2.1 km away</div>
+            </div>
+            <div class="phone-card-badge">⭐ FEATURED</div>
+          </div>
+          <div class="phone-card-price">KES 1,350,000</div>
+          <div class="phone-deal-bar"></div>
+        </div>
+
+        <div class="phone-card">
+          <div class="phone-card-row">
+            <div>
+              <div class="phone-card-name">📱 iPhone 14 Pro Max</div>
+              <div class="phone-card-meta">CBD · 0.8 km away</div>
+            </div>
+          </div>
+          <div class="phone-card-price">KES 145,000</div>
+        </div>
+
+        <div class="phone-ai-msg">
+          <span>🤖 Zeno:</span> "This seller has completed 47 deals with a 4.9⭐ rating. The asking price is within market range. I recommend starting at KES 138,000."
+        </div>
+
+        <div class="phone-bottom">
+          <span class="phone-nav-icon active">🏠</span>
+          <span class="phone-nav-icon">💬</span>
+          <span class="phone-nav-icon">➕</span>
+          <span class="phone-nav-icon">✨</span>
+          <span class="phone-nav-icon">👤</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Ticker ─── -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="ticker">
+    <span class="ticker-item"><span class="ti-cat">Vehicles</span> Toyota Fielder 2016 <span class="ti-price">KES 1.35M</span></span>
+    <span class="ticker-item"><span class="ti-cat">Electronics</span> iPhone 14 Pro Max <span class="ti-price">KES 145K</span></span>
+    <span class="ticker-item"><span class="ti-cat">Property</span> 2BR Apartment, Kilimani <span class="ti-price">KES 95K/mo</span></span>
+    <span class="ticker-item"><span class="ti-cat">Livestock</span> Friesian Heifer · Nakuru <span class="ti-price">KES 65K</span></span>
+    <span class="ticker-item"><span class="ti-cat">Electronics</span> Samsung S23 Ultra <span class="ti-price">KES 98K</span></span>
+    <span class="ticker-item"><span class="ti-cat">Vehicles</span> Subaru Outback 2018 <span class="ti-price">KES 2.1M</span></span>
+    <span class="ticker-item"><span class="ti-cat">Property</span> Plot · Thika Road <span class="ti-price">KES 3.4M</span></span>
+    <span class="ticker-item"><span class="ti-cat">Vehicles</span> Toyota Fielder 2016 <span class="ti-price">KES 1.35M</span></span>
+    <span class="ticker-item"><span class="ti-cat">Electronics</span> iPhone 14 Pro Max <span class="ti-price">KES 145K</span></span>
+    <span class="ticker-item"><span class="ti-cat">Property</span> 2BR Apartment, Kilimani <span class="ti-price">KES 95K/mo</span></span>
+    <span class="ticker-item"><span class="ti-cat">Livestock</span> Friesian Heifer · Nakuru <span class="ti-price">KES 65K</span></span>
+    <span class="ticker-item"><span class="ti-cat">Electronics</span> Samsung S23 Ultra <span class="ti-price">KES 98K</span></span>
+    <span class="ticker-item"><span class="ti-cat">Vehicles</span> Subaru Outback 2018 <span class="ti-price">KES 2.1M</span></span>
+    <span class="ticker-item"><span class="ti-cat">Property</span> Plot · Thika Road <span class="ti-price">KES 3.4M</span></span>
+  </div>
+</div>
+
+<!-- ─── How It Works ─── -->
+<section id="how">
+  <div class="container">
+    <div class="section-eyebrow reveal">
+      <span class="pill">Simple Process</span>
+    </div>
+    <h2 class="section-heading reveal">How BROKA works</h2>
+    <p class="section-sub reveal">Four steps from listing to paid — with an AI mediator protecting you at every turn.</p>
+
+    <div class="how-grid">
+      <div class="how-card reveal reveal-delay-1">
+        <div class="how-step-num">STEP 01</div>
+        <div class="how-icon purple">📝</div>
+        <h3>List or Discover</h3>
+        <p>Post your item in 60 seconds with photos, video proof, and a price. Or browse verified listings filtered by location, category, and price.</p>
+      </div>
+      <div class="how-card reveal reveal-delay-2">
+        <div class="how-step-num">STEP 02</div>
+        <div class="how-icon blue">🤖</div>
+        <h3>AI Broker Steps In</h3>
+        <p>Zeno — BROKA's AI powered by Llama 3.3 70B — checks seller credibility, compares market prices, detects fraud risk, and coaches both sides toward a fair deal.</p>
+      </div>
+      <div class="how-card reveal reveal-delay-3">
+        <div class="how-step-num">STEP 03</div>
+        <div class="how-icon green">🤝</div>
+        <h3>Negotiate in Your Language</h3>
+        <p>Chat directly or via AI-assisted mode in English, Swahili, Sheng, Luo, Kikuyu, or Luganda. Voice notes powered by natural East African TTS voices.</p>
+      </div>
+      <div class="how-card reveal reveal-delay-4">
+        <div class="how-step-num">STEP 04</div>
+        <div class="how-icon gold">✅</div>
+        <h3>Pay Securely via M-Pesa</h3>
+        <p>Funds are held in escrow with biometric confirmation before release. If anything goes wrong, BROKA's dispute system resolves it fairly and fast.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Tech Strip ─── -->
+<div class="tech-strip">
+  <div class="tech-strip-inner">
+    <span style="font-size:12px;color:var(--text-low);margin-right:8px;letter-spacing:1px;font-weight:600;">POWERED BY</span>
+    <span class="tech-badge"><span class="dot" style="background:#00E5FF"></span>Flutter</span>
+    <span class="tech-badge"><span class="dot" style="background:#009688"></span>FastAPI</span>
+    <span class="tech-badge"><span class="dot" style="background:#6366F1"></span>Llama 3.3 70B via Groq</span>
+    <span class="tech-badge"><span class="dot" style="background:#4CAF50"></span>M-Pesa Daraja</span>
+    <span class="tech-badge"><span class="dot" style="background:#FF6B35"></span>Edge TTS</span>
+    <span class="tech-badge"><span class="dot" style="background:#A78BFA"></span>JWT + Biometrics</span>
+    <span class="tech-badge"><span class="dot" style="background:#38BDF8"></span>PostgreSQL</span>
+  </div>
+</div>
+
+<!-- ─── Features ─── -->
+<section id="features" class="features-bg">
+  <div class="container">
+    <div class="section-eyebrow reveal"><span class="pill">What makes BROKA different</span></div>
+    <h2 class="section-heading reveal">Built for East Africa.<br/>Not adapted for it.</h2>
+    <p class="section-sub reveal">Every feature was designed from the ground up for Kenyan and East African commerce — not retrofitted from a Western template.</p>
+
+    <div class="features-grid">
+      <div class="feature-item reveal reveal-delay-1">
+        <div class="feature-icon-wrap">🛡️</div>
+        <div class="feature-text">
+          <h4>Escrow Protection</h4>
+          <p>Funds are held until the buyer confirms delivery. Neither party can run with the money. Full audit trail on every deal.</p>
+        </div>
+      </div>
+      <div class="feature-item reveal reveal-delay-2">
+        <div class="feature-icon-wrap">🎯</div>
+        <div class="feature-text">
+          <h4>Zeno AI Price Analysis</h4>
+          <p>Zeno compares your listing against live market data, scores the seller's credibility, and gives both parties an unbiased fair-price verdict.</p>
+        </div>
+      </div>
+      <div class="feature-item reveal reveal-delay-1">
+        <div class="feature-icon-wrap">🔐</div>
+        <div class="feature-text">
+          <h4>Biometric Payment Auth</h4>
+          <p>Every M-Pesa payment requires a fresh fingerprint or face scan — captured live, not stored device data — so no one approves a payment but you.</p>
+        </div>
+      </div>
+      <div class="feature-item reveal reveal-delay-2">
+        <div class="feature-icon-wrap">🗺️</div>
+        <div class="feature-text">
+          <h4>Stores Near You</h4>
+          <p>Discover verified business storefronts within your area using Haversine proximity search. Browse products, read reviews, and order locally.</p>
+        </div>
+      </div>
+      <div class="feature-item reveal reveal-delay-1">
+        <div class="feature-icon-wrap">📹</div>
+        <div class="feature-text">
+          <h4>Verified Photo & Video Proof</h4>
+          <p>Sellers upload verified media — photos and video walkthroughs — so you know exactly what you're buying before you meet.</p>
+        </div>
+      </div>
+      <div class="feature-item reveal reveal-delay-2">
+        <div class="feature-icon-wrap">⚡</div>
+        <div class="feature-text">
+          <h4>STK Push Payments</h4>
+          <p>M-Pesa payment requests land directly on your phone. No USSD menus, no copy-pasting. One tap to pay, one tap to confirm.</p>
+        </div>
+      </div>
+      <div class="feature-item reveal reveal-delay-1">
+        <div class="feature-icon-wrap">🏆</div>
+        <div class="feature-text">
+          <h4>Live Auctions</h4>
+          <p>Run timed bidding events on your listings. Buyers compete in real time, you get the best price, and BROKA manages the whole process.</p>
+        </div>
+      </div>
+      <div class="feature-item reveal reveal-delay-2">
+        <div class="feature-icon-wrap">⚖️</div>
+        <div class="feature-text">
+          <h4>Dispute Resolution</h4>
+          <p>If something goes wrong, raise a dispute and BROKA's admin team reviews the evidence. Funds stay frozen until it's resolved fairly.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Languages ─── -->
+<section class="languages-section">
+  <div class="container">
+    <div class="section-eyebrow reveal"><span class="pill">Language Support</span></div>
+    <h2 class="section-heading reveal">Negotiate in<br/><span class="gradient-text">your mother tongue.</span></h2>
+    <p class="section-sub reveal">BROKA supports natural conversation and AI-generated voice in six East African languages. No more haggling in a language that's not yours.</p>
+
+    <div class="lang-grid reveal">
+      <div class="lang-chip"><span class="flag">🇬🇧</span> English</div>
+      <div class="lang-chip"><span class="flag">🇰🇪</span> Swahili</div>
+      <div class="lang-chip"><span class="flag">🔥</span> Sheng</div>
+      <div class="lang-chip"><span class="flag">🟡</span> Luo</div>
+      <div class="lang-chip"><span class="flag">🟤</span> Kikuyu</div>
+      <div class="lang-chip"><span class="flag">🇺🇬</span> Luganda</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Store Subscriptions ─── -->
+<section id="stores">
+  <div class="container">
+    <div class="section-eyebrow reveal"><span class="pill">Business Storefronts</span></div>
+    <h2 class="section-heading reveal">Open your store.<br/>Sell to your neighbourhood.</h2>
+    <p class="section-sub reveal">BROKA gives businesses a full e-commerce storefront — product catalogue, reviews, M-Pesa checkout, and proximity discovery — all in one app.</p>
+
+    <div class="pricing-grid" id="pricing">
+      <div class="pricing-card reveal reveal-delay-1">
+        <div class="pricing-name">Starter</div>
+        <div class="pricing-amount">
+          <span class="currency">KSh</span>
+          <span class="price">299</span>
+          <span class="period">/mo</span>
+        </div>
+        <div class="pricing-desc">For individuals selling casually on the side.</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> Up to 5 product listings</li>
+          <li><span class="check">✓</span> Basic storefront page</li>
+          <li><span class="check">✓</span> M-Pesa checkout</li>
+          <li><span class="check">✓</span> Customer reviews</li>
+          <li class="dim"><span class="check">✗</span> Priority in search results</li>
+          <li class="dim"><span class="check">✗</span> Analytics dashboard</li>
+        </ul>
+      </div>
+
+      <div class="pricing-card featured reveal reveal-delay-2">
+        <div class="pricing-badge">MOST POPULAR</div>
+        <div class="pricing-name">Business</div>
+        <div class="pricing-amount">
+          <span class="currency">KSh</span>
+          <span class="price">799</span>
+          <span class="period">/mo</span>
+        </div>
+        <div class="pricing-desc">For active sellers and small shops building a local brand.</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> Up to 50 product listings</li>
+          <li><span class="check">✓</span> Verified storefront badge</li>
+          <li><span class="check">✓</span> M-Pesa STK push checkout</li>
+          <li><span class="check">✓</span> Customer reviews + replies</li>
+          <li><span class="check">✓</span> Priority in nearby search</li>
+          <li><span class="check">✓</span> Basic analytics</li>
+        </ul>
+      </div>
+
+      <div class="pricing-card reveal reveal-delay-3">
+        <div class="pricing-name">Pro</div>
+        <div class="pricing-amount">
+          <span class="currency">KSh</span>
+          <span class="price">1,999</span>
+          <span class="period">/mo</span>
+        </div>
+        <div class="pricing-desc">For established businesses scaling across East Africa.</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> Unlimited product listings</li>
+          <li><span class="check">✓</span> Top placement in all feeds</li>
+          <li><span class="check">✓</span> Full M-Pesa escrow suite</li>
+          <li><span class="check">✓</span> Advanced analytics + exports</li>
+          <li><span class="check">✓</span> Boost listing credits</li>
+          <li><span class="check">✓</span> Dedicated dispute priority</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Testimonials ─── -->
+<section style="padding:60px 24px 100px">
+  <div class="container">
+    <div class="section-eyebrow reveal"><span class="pill">Trusted by Traders</span></div>
+    <h2 class="section-heading reveal">Real deals.<br/>Real people.</h2>
+    <div style="height:48px"></div>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal reveal-delay-1">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-quote">"Niliwahi pata mtu akijaribu kunidanganya bei ya phone. Zeno alisema moja kwa moja — bei hii ni juu ya soko. Tulikubaliana haraka. Asante BROKA!"</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">NW</div>
+          <div>
+            <div class="testimonial-name">Njambi W.</div>
+            <div class="testimonial-loc">📍 Thika, Kenya</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-2">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-quote">"Sold my Fielder in 3 days. The buyer was nervous about M-Pesa scams so BROKA held the funds in escrow. When he was happy, I got paid instantly. No stress."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">BM</div>
+          <div>
+            <div class="testimonial-name">Brian M.</div>
+            <div class="testimonial-loc">📍 Nairobi, Kenya</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-3">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-quote">"My electronics shop did 3× more sales after opening a BROKA storefront. Customers find me through 'Stores Near You' and pay directly in the app. Game changer."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">AK</div>
+          <div>
+            <div class="testimonial-name">Amara K.</div>
+            <div class="testimonial-loc">📍 Kampala, Uganda</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Download CTA ─── -->
+<section class="cta-section">
+  <div class="cta-bg-glow"></div>
+  <div class="container" style="position:relative">
+    <div class="section-eyebrow" style="margin-bottom:20px">
+      <span class="pill">Available Now · Android</span>
+    </div>
+    <h2 class="cta-headline">
+      Ready to trade smarter?<br/>
+      <span class="gradient-text">Download BROKA free.</span>
+    </h2>
+    <p class="cta-sub">Join thousands of traders across East Africa who've already chosen a fairer, smarter marketplace.</p>
+    <div class="cta-actions">
+      <a href="https://we.tl/t-5khUBKXnAtbxmZ7Z" class="download-btn" target="_blank" rel="noopener">
+        <span class="db-icon">🤖</span>
+        <span class="db-text">
+          <span class="db-sub">Download for Android</span>
+          <span class="db-name">BROKA — Beta</span>
+        </span>
+      </a>
+    </div>
+    <p style="margin-top:20px;font-size:12px;color:var(--text-low)">
+      APK download · No Google Play account required · Free to install
+    </p>
+  </div>
+</section>
+
+<!-- ─── Footer ─── -->
+<footer>
+  <a href="#" class="footer-logo">
+    <div class="nav-logo-mark" style="width:30px;height:30px;font-size:14px;border-radius:8px">B</div>
+    <span class="footer-name">BROKA</span>
+  </a>
+  <ul class="footer-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="https://we.tl/t-5khUBKXnAtbxmZ7Z" target="_blank" rel="noopener">Download</a></li>
+  </ul>
+  <div class="footer-copy">
+    © 2026 BROKA. Built for East Africa. The fairest way to buy &amp; sell.
+  </div>
+</footer>
+
+<script>
+/* ─── Orbit Canvas Animation ─── */
+const canvas = document.getElementById('orbit-canvas');
+const ctx = canvas.getContext('2d');
+let w, h, cx, cy;
+let t = 0;
+
+function resize() {
+  w = canvas.width  = canvas.offsetWidth;
+  h = canvas.height = canvas.offsetHeight;
+  cx = w / 2;
+  cy = h / 2;
+}
+resize();
+window.addEventListener('resize', resize);
+
+function drawOrbit(radius, dotCount, dotRadius, color, speed, phase) {
+  const angle = t * speed + phase;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+  // Ring
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = color.replace(')', ',0.12)').replace('rgb','rgba').replace('rgba(rgba','rgba');
+  ctx.lineWidth = 0.4;
+  ctx.stroke();
+  // Dots
+  for (let i = 0; i < dotCount; i++) {
+    const a = (i / dotCount) * Math.PI * 2;
+    const x = Math.cos(a) * radius;
+    const y = Math.sin(a) * radius;
+    const r = i % 4 === 0 ? dotRadius * 1.6 : dotRadius;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function animate() {
+  ctx.clearRect(0, 0, w, h);
+  const baseRadius = Math.min(w, h) * 0.38;
+  drawOrbit(baseRadius * 2.1, 24, 2,   'rgba(167,139,250,0.06)',  0.0003, 0);
+  drawOrbit(baseRadius * 1.5, 16, 2.5, 'rgba(56,189,248,0.14)',  -0.0005, 1);
+  drawOrbit(baseRadius,        8, 3.5, 'rgba(167,139,250,0.4)',   0.0009, 2);
+  t++;
+  requestAnimationFrame(animate);
+}
+animate();
+
+/* ─── Nav scroll effect ─── */
+window.addEventListener('scroll', () => {
+  document.getElementById('main-nav').classList.toggle('scrolled', scrollY > 40);
+});
+
+/* ─── Reveal on scroll ─── */
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.12 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
