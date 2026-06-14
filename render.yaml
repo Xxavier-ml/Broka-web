@@ -3,6 +3,7 @@
 # ║           Infrastructure-as-code for Render.com deployment                  ║
 # ║                                                                              ║
 # ║  Deploys:                                                                    ║
+# ║    • broka-site  — Static website  (free, instant CDN)                      ║
 # ║    • broka-api   — FastAPI backend (Docker, Python 3.11)                    ║
 # ║    • broka-db    — PostgreSQL 15 managed database                           ║
 # ║                                                                              ║
@@ -11,78 +12,121 @@
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
 services:
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # STATIC SITE — Marketing landing page + App UI preview
+  # Renders on Render's global CDN. No build step needed — pure HTML files.
+  # ────────────────────────────────────────────────────────────────────────────
+  - type: web
+    name: broka-site
+    runtime: static
+    region: oregon
+    plan: free                        # Static sites are always free on Render
+
+    # Where your HTML files live inside the repo
+    staticPublishPath: ./website
+
+    # The file Render serves for the root URL (/)
+    # broka-landing.html is the public-facing marketing page
+    # broka-app.html is the interactive app UI demo — linked from the landing page
+
+    # ── Routes ────────────────────────────────────────────────────────────────
+    # Render reads a _redirects file from your staticPublishPath for SPA routing.
+    # The file is at website/_redirects — see below.
+    routes:
+      - type: rewrite
+        source: /app
+        destination: /broka-app.html
+      - type: rewrite
+        source: /app/*
+        destination: /broka-app.html
+      - type: rewrite
+        source: /*
+        destination: /broka-landing.html
+
+    # ── Custom headers (security + performance) ───────────────────────────────
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: "/*.html"
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate    # Always fresh for HTML
+      - path: "/*.js"
+        name: Cache-Control
+        value: public, max-age=31536000, immutable   # 1 year for assets
+      - path: "/*.css"
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+
   # ────────────────────────────────────────────────────────────────────────────
   # WEB SERVICE — FastAPI backend
   # ────────────────────────────────────────────────────────────────────────────
   - type: web
     name: broka-api
     runtime: docker
-    region: oregon          # closest to East Africa on Render's free tier
+    region: oregon
     plan: free              # upgrade to starter ($7/mo) for always-on + health checks
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
 
     # ── Health check ──────────────────────────────────────────────────────────
-    healthCheckPath: /docs   # FastAPI auto-generates /docs; confirms app is alive
+    healthCheckPath: /docs
 
     # ── Environment Variables ─────────────────────────────────────────────────
     envVars:
 
       # ── Core / Security ───────────────────────────────────────────────────
       - key: SECRET_KEY
-        generateValue: true   # Render generates a random 32-byte hex string automatically
+        generateValue: true
 
       - key: TOKEN_EXPIRE_MINUTES
-        value: "60"           # JWT lifetime in minutes; increase for less friction
+        value: "60"
 
       - key: ALLOWED_ORIGINS
-        value: "*"
-        # ↑ DEV default — disables credential cookies but allows any client.
-        # PROD: replace with your actual origins, e.g.:
-        #   value: "https://broka.app,https://www.broka.app"
-        # If you publish to Codemagic, add that URL here after first build.
+        value: "https://broka-site.onrender.com"
+        # ↑ Locks CORS to the static site domain once deployed.
+        # Add more origins comma-separated, e.g.:
+        #   value: "https://broka-site.onrender.com,https://broka.app"
 
       # ── Database ──────────────────────────────────────────────────────────
       - key: DATABASE_URL
         fromDatabase:
           name: broka-db
           property: connectionString
-        # Render injects the full asyncpg:// connection string automatically.
-        # Falls back to SQLite (sqlite+aiosqlite:///./broka.db) if not set.
 
       # ── AI — Groq (Llama 3.3 70B — primary negotiation engine) ───────────
       - key: GROQ_API_KEY
         sync: false
         # ← SET THIS MANUALLY
         # Get key at: https://console.groq.com/keys
-        # Used by: /negotiate  (Zeno AI broker)
-        #          /disputes   (AI dispute mediator)
 
-      # ── AI — Google Gemini (optional fallback / analysis) ─────────────────
+      # ── AI — Google Gemini (optional fallback) ─────────────────────────────
       - key: GEMINI_API_KEY
         sync: false
         # ← SET THIS MANUALLY (or leave empty to use Groq only)
         # Get key at: https://aistudio.google.com/app/apikey
-        # Used by: /negotiate, /disputes as secondary model
 
       # ── AI — OpenAI Whisper (Speech-to-Text / STT) ────────────────────────
       - key: OPENAI_API_KEY
         sync: false
         # ← SET THIS MANUALLY
         # Get key at: https://platform.openai.com/api-keys
-        # Used by: /stt  (voice message transcription)
-        # Optional — STT falls back gracefully if not set.
 
-      # ── M-Pesa Daraja API (Safaricom) ─────────────────────────────────────
+      # ── M-Pesa Daraja API ─────────────────────────────────────────────────
       - key: MPESA_ENV
         value: "sandbox"
         # ← Change to "production" when going live.
-        # Affects all M-Pesa API base URLs automatically.
 
       - key: MPESA_CONSUMER_KEY
         sync: false
-        # ← SET THIS MANUALLY
-        # Get from: https://developer.safaricom.co.ke → My Apps
+        # ← SET THIS MANUALLY — https://developer.safaricom.co.ke → My Apps
 
       - key: MPESA_CONSUMER_SECRET
         sync: false
@@ -90,80 +134,68 @@ services:
 
       - key: MPESA_SHORTCODE
         value: "174379"
-        # ← Sandbox default. Replace with your till/paybill number in production.
+        # ← Sandbox default. Replace with your paybill/till in production.
 
       - key: MPESA_PASSKEY
         sync: false
         # ← SET THIS MANUALLY
-        # Found in Safaricom Daraja portal under your app's STK Push settings.
 
       - key: MPESA_CALLBACK_URL
         value: "https://broka-api.onrender.com/mpesa/callback"
-        # ← Update the subdomain to match your actual Render service URL.
-        # Safaricom sends STK push results here.
+        # ← Update subdomain to match your actual Render service URL.
 
-      # ── M-Pesa B2C (Seller payouts / dispute refunds) ─────────────────────
+      # ── M-Pesa B2C (seller payouts / dispute refunds) ─────────────────────
       - key: MPESA_B2C_INITIATOR
         sync: false
         # ← SET THIS MANUALLY
-        # The M-Pesa API operator username for B2C (Business-to-Customer) payouts.
 
       - key: MPESA_B2C_CREDENTIAL
         sync: false
         # ← SET THIS MANUALLY
-        # Encrypted security credential from Safaricom portal.
 
       - key: MPESA_B2C_RESULT_URL
         value: "https://broka-api.onrender.com/mpesa/b2c/result"
-        # ← Update subdomain to your Render service URL.
 
       - key: MPESA_B2C_TIMEOUT_URL
         value: "https://broka-api.onrender.com/mpesa/b2c/timeout"
-        # ← Update subdomain to your Render service URL.
 
-      # ── Firebase (VoIP / in-app calls via calls router) ───────────────────
+      # ── Firebase (VoIP calls — optional) ──────────────────────────────────
       - key: FIREBASE_SERVICE_ACCOUNT_JSON
         sync: false
-        # ← SET THIS MANUALLY (optional — only needed if using in-app calling)
-        # Paste the entire JSON from Firebase Console → Project Settings →
-        # Service Accounts → Generate new private key.
-        # Leave empty to disable the /calls router gracefully.
+        # ← SET THIS MANUALLY (optional)
+        # Full JSON from Firebase Console → Project Settings → Service Accounts
 
       # ── Admin bootstrap ───────────────────────────────────────────────────
       - key: ADMIN_BOOTSTRAP_EMAIL
         sync: false
-        # ← SET THIS MANUALLY (one-time setup)
-        # Set to your email BEFORE the first boot. The backend will promote
-        # that user to admin on startup. Remove after first login.
+        # ← SET THIS MANUALLY (one-time setup — remove after first login)
 
-      # ── Internal security (Zeno webhook signing) ──────────────────────────
+      # ── Internal security ─────────────────────────────────────────────────
       - key: ZAC_SECRET
         generateValue: true
-        # Render auto-generates a random value.
-        # Used to sign internal Zeno AI callback webhooks.
 
 # ────────────────────────────────────────────────────────────────────────────
 # MANAGED DATABASE — PostgreSQL 15
 # ────────────────────────────────────────────────────────────────────────────
 databases:
   - name: broka-db
-    plan: free              # 256 MB RAM, 1 GB storage, 90-day expiry on free tier
-    region: oregon          # must match the web service region
+    plan: free
+    region: oregon
     databaseName: broka
     user: broka_user
-    # ↑ Render creates the DB and injects DATABASE_URL into broka-api automatically.
-    # Upgrade to the $7/mo starter plan for persistent storage (no 90-day limit).
 
 # ────────────────────────────────────────────────────────────────────────────
-# QUICK-START CHECKLIST (do these after first render blueprint deploy)
+# QUICK-START CHECKLIST
 # ────────────────────────────────────────────────────────────────────────────
-# 1. Go to Dashboard → broka-api → Environment
-# 2. Fill in all values marked "← SET THIS MANUALLY" above
-# 3. Set ADMIN_BOOTSTRAP_EMAIL to your email, then trigger a manual deploy
-# 4. Open https://broka-api.onrender.com/docs to confirm the API is live
-# 5. Call POST /auth/register to create your first user
-# 6. Call POST /auth/admin/bootstrap to grant yourself admin access
-# 7. Remove or blank ADMIN_BOOTSTRAP_EMAIL env var after confirming admin access
-# 8. Update ALLOWED_ORIGINS to your production app URL(s)
-# 9. Switch MPESA_ENV from "sandbox" to "production" when ready to go live
-# 10. Upgrade both plans from free → starter once you're past MVP stage
+# 1.  Push this repo to GitHub (make sure website/ folder is committed)
+# 2.  Render Dashboard → New → Blueprint → connect repo
+#     Render will detect render.yaml and create all 3 services automatically
+# 3.  Static site (broka-site) will deploy instantly — no config needed
+#     Visit: https://broka-site.onrender.com
+#            https://broka-site.onrender.com/app  ← interactive app UI
+# 4.  Go to Dashboard → broka-api → Environment
+#     Fill in all "← SET THIS MANUALLY" values
+# 5.  Trigger a manual deploy on broka-api
+# 6.  Confirm API is live: https://broka-api.onrender.com/docs
+# 7.  Update ALLOWED_ORIGINS if you add a custom domain
+# 8.  Switch MPESA_ENV → "production" when going live
